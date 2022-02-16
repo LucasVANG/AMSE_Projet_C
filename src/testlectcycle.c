@@ -1,8 +1,3 @@
-/*=================================================*/
-/* programme d'utilisation des "alarmes cycliques" */
-/*-------------------------------------------------*/
-/* Jacques BOONAERT / cours SEMBA et AMSE          */
-/*=================================================*/
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,10 +6,18 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/time.h>          /* ->INDISPENSABLE pour les types tempo. */
+#include <sys/time.h>  
+
+#include <ctype.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>      /* ->INDISPENSABLE pour les types tempo. */
 /*....................*/
 /* variables globales */
 /*....................*/
+#define AREA_NAME       "TVR"    /* ->nom de la zone partagee                 */
+#define STOP            "A"      /* ->chaine a saisir pour declencher l'arret */
+#define STR_LEN         256         /* ->taille par defaut des chaines           */
 int test=0;
 int  hh,                       /* ->heures                              */
      mm,                       /* ->minutes                             */
@@ -43,16 +46,40 @@ void usage( char *pgm_name )
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
 /* gestionnaire de l'alarme cyclique */
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
-void cycl_alm_handler( int signal )
+void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itération
 {
     test++;
     printf("%i\n", test);
-    if( test==10 )
-    {
-      printf("TERMINE !!! \n");
-      GoOn = 0; /* declenche la sortie de programme */
+    void *vAddr;                    /* ->adresse virtuelle sur la zone          */
+    char *szInStr;                  /* ->chaine saisie                          */
+    int  iShmFd;                    /* ->descripteur associe a la zone partagee */
+    /*..................................*/
+    /* tentative d'acces a la zone */
+    /*..................................*/
+    /* on essaie de se lier sans creer... */
+    if( (iShmFd = shm_open(AREA_NAME, O_RDWR, 0600)) < 0)
+    {  
+        fprintf(stderr,"ERREUR : ---> appel a shm_open()\n");
+        fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
+        return( -errno );
     };
+    /* on attribue la taille a la zone partagee */
+    ftruncate(iShmFd, STR_LEN);
+    /* tentative de mapping de la zone dans l'espace memoire du */
+    /* processus                                                */
+    if( (vAddr = mmap(NULL, STR_LEN, PROT_READ | PROT_WRITE, MAP_SHARED, iShmFd, 0 ))  == NULL)
+    {
+        fprintf(stderr,"ERREUR : ---> appel a mmap()\n");
+        fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
+        return( -errno );
+    };
+    szInStr = (char *)(vAddr);
+    /* affichage */
+    printf("contenu de la zone = %s\n", szInStr);
+    //shm_unlink(AREA_NAME);
 }
+
+
 /*#####################*/
 /* programme principal */
 /*#####################*/
@@ -65,16 +92,6 @@ int main( int argc, char *argv[])
   /* verification des arguments */
   if( argc != 4 )
   {
-    usage( argv[0] );
-    return( 0 );
-  };
-  /* recuperation des arguments */
-  if( (sscanf(argv[1],"%d", &hh) == 0)||
-      (sscanf(argv[2],"%d", &mm) == 0)||
-      (sscanf(argv[3],"%d", &ss) == 0)  )
-  {
-    printf("ERREUR : probleme de format des arguments\n");
-    printf("         passe en ligne de commande.\n");
     usage( argv[0] );
     return( 0 );
   };
@@ -97,7 +114,6 @@ int main( int argc, char *argv[])
   /* d'attendre les signaux                     */
   do
   {
-    printf("hello");
     pause();
   }
   while( GoOn == 1 );
