@@ -15,13 +15,17 @@
 /*....................*/
 /* variables globales */
 /*....................*/
-#define AREA_NAME       "TVR"    /* ->nom de la zone partagee                 */
+#define AREA_NAME1       "TVR"    /* ->nom de la zone partagee                 */
+#define AREA_NAME2      "TVL"
 #define STOP            "A"      /* ->chaine a saisir pour declencher l'arret */
 #define STR_LEN         256         /* ->taille par defaut des chaines           */
 
-void *vAddr;                    /* ->adresse virtuelle sur la zone          */
-char *szInStr;                  /* ->chaine saisie                          */
-int  iShmFd;                    /* ->descripteur associe a la zone partagee */
+void *vAddr1;                    /* ->adresse virtuelle sur la zone          */
+void *vAddr2;
+char *szInStr1;                  /* ->chaine saisie                          */
+char *szInStr2;
+int  iShmFd1;                    /* ->descripteur associe a la zone partagee */
+int iShmFd2;
 float valeurstab[]={1,1,1,1,1,0.8,0.6,0.4,0.2,0.2,0.4,0.6,0.8};
 int test=0;
 int  hh,                       /* ->heures                              */
@@ -56,9 +60,12 @@ void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itér
     
     /* saisie */
     
-        gcvt(valeurstab[test],3,szInStr);
-        printf("Valeur inscrite dans la mémoire=%s\n",szInStr);
+        gcvt(valeurstab[test],3,szInStr1);
+        printf("Valeur inscrite dans la mémoire=%s\n",szInStr1);
         printf("indice dans le tableau de valeur test=%i\n", test);
+        gcvt(valeurstab[test]+1,3,szInStr2);
+        printf("Valeur inscrite dans la mémoire=%s\n",szInStr2);
+        printf("indice dans le tableau de valeur test=%i\n", test)+1;
         test++;
         test=test%13;
 
@@ -77,11 +84,11 @@ int main( int argc, char *argv[])
     /*..................................*/
     /* tentative de creation de la zone */
     /*..................................*/
-    if( (iShmFd = shm_open(AREA_NAME, O_RDWR | O_CREAT, 0600)) < 0)
+    if( (iShmFd1 = shm_open(AREA_NAME1, O_RDWR | O_CREAT, 0600)) < 0)
     {
         /* on essaie de se lier sans creer... */
         printf("echec de creation, lien seul...\n");
-        if( (iShmFd = shm_open(AREA_NAME, O_RDWR, STR_LEN)) < 0)
+        if( (iShmFd1 = shm_open(AREA_NAME1, O_RDWR, STR_LEN)) < 0)
         {  
             fprintf(stderr,"ERREUR : ---> appel a shm_open()\n");
             fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
@@ -89,16 +96,42 @@ int main( int argc, char *argv[])
         };
     };
     /* on attribue la taille a la zone partagee */
-    ftruncate(iShmFd, STR_LEN);
+    ftruncate(iShmFd1, STR_LEN);
     /* tentative de mapping de la zone dans l'espace memoire du */
     /* processus                                                */
-    if( (vAddr = mmap(NULL, STR_LEN, PROT_READ | PROT_WRITE, MAP_SHARED, iShmFd, 0 ))  == NULL)
+    if( (vAddr1 = mmap(NULL, STR_LEN, PROT_READ | PROT_WRITE, MAP_SHARED, iShmFd1, 0 ))  == NULL)
     {
         fprintf(stderr,"ERREUR : ---> appel a mmap()\n");
         fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
         return( -errno );
     };
-    szInStr = (char *)(vAddr);
+    szInStr1 = (char *)(vAddr1);
+
+    /*..................................*/
+    /* tentative de creation de la zone */
+    /*..................................*/
+    if( (iShmFd2 = shm_open(AREA_NAME2, O_RDWR | O_CREAT, 0600)) < 0)
+    {
+        /* on essaie de se lier sans creer... */
+        printf("echec de creation, lien seul...\n");
+        if( (iShmFd2 = shm_open(AREA_NAME2, O_RDWR, STR_LEN)) < 0)
+        {  
+            fprintf(stderr,"ERREUR : ---> appel a shm_open()\n");
+            fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
+            return( -errno );
+        };
+    };
+    /* on attribue la taille a la zone partagee */
+    ftruncate(iShmFd2, STR_LEN);
+    /* tentative de mapping de la zone dans l'espace memoire du */
+    /* processus                                                */
+    if( (vAddr2 = mmap(NULL, STR_LEN, PROT_READ | PROT_WRITE, MAP_SHARED, iShmFd2, 0 ))  == NULL)
+    {
+        fprintf(stderr,"ERREUR : ---> appel a mmap()\n");
+        fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
+        return( -errno );
+    };
+    szInStr2 = (char *)(vAddr2);
 
 
 
@@ -128,10 +161,15 @@ int main( int argc, char *argv[])
   do
   {
     pause();
-    if( strcmp(szInStr,STOP) == 0 )
-        {
-            printf("FIN\n");
-            shm_unlink(AREA_NAME);
+    if( strcmp(szInStr1,STOP) == 0 )
+      {
+          printf("FIN zone 1\n");
+          shm_unlink(AREA_NAME1);
+      }
+    if( strcmp(szInStr1,STOP) == 0 )
+      {
+          printf("FIN zone 1\n");
+            shm_unlink(AREA_NAME1);
         };
   }
   while( GoOn == 1 );

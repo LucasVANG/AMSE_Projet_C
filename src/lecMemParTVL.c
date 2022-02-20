@@ -15,7 +15,7 @@
 /*....................*/
 /* variables globales */
 /*....................*/
-#define AREA_NAME       "TVR"    /* ->nom de la zone partagee                 */
+#define AREA_NAME       "TVL"    /* ->nom de la zone partagee                 */
 #define STOP            "A"      /* ->chaine a saisir pour declencher l'arret */
 #define STR_LEN         256         /* ->taille par defaut des chaines           */
 int test=0;
@@ -89,12 +89,6 @@ int main( int argc, char *argv[])
                         sa_old;  /* ->ancienne config de gestion d'alarme     */
   sigset_t              blocked; /* ->liste des signaux bloques               */
   struct itimerval      period;  /* ->periode de l'alarme cyclique            */
-  /* verification des arguments */
-  if( argc != 4 )
-  {
-    usage( argv[0] );
-    return( 0 );
-  };
   /* initialisation */
   sigemptyset( &blocked );
   memset( &sa, 0, sizeof( sigaction )); /* ->precaution utile... */
