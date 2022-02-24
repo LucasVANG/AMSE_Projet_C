@@ -51,6 +51,7 @@ void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itér
 {
     test++;
     printf("%i\n", test);
+    
     /* affichage */
     printf("contenu de la zone = %s\n", szInStr);
     //shm_unlink(AREA_NAME);
@@ -83,7 +84,7 @@ int main( int argc, char *argv[])
   setitimer( ITIMER_REAL, &period, NULL );
   /* on ne fait desormais plus rien d'autre que */
   /* d'attendre les signaux                     */
-  void *vAddr;                    /* ->adresse virtuelle sur la zone          */                  /* ->chaine saisie                          */
+  void *vAddr;                    /* ->adresse virtuelle sur la zone          */
     int  iShmFd;                    /* ->descripteur associe a la zone partagee */
     /*..................................*/
     /* tentative d'acces a la zone */
