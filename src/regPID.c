@@ -27,9 +27,9 @@ typedef struct etat_moteur{
 #define AREA_STATE_R   "STATER"
 #define STOP           "A"      /* ->chaine a saisir pour declencher l'arret */
 #define STR_LEN        256         /* ->taille par defaut des chaines           */
-char *sm_tv;
-char *sm_u;
-etat_moteur *sm_state;
+double* sm_tv;
+double* sm_u;
+etat_moteur* sm_state;
 
 // General Variables
 double dt = 0.01;
@@ -48,12 +48,6 @@ double errorInt = 0;
 double tv = 0.0;
 double state_w = 0.0;
 double u = 0.0;
-void readMemories(){
-
-}
-void writeMemories(){
-    
-}
 
 // PI main funcion
 void stepPI(){
@@ -140,7 +134,7 @@ int main(int argc, char *argv[]){
             fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
             return( -errno );
         };
-        sm_tv = (char *)(vAddr);
+        sm_tv = (double *)(vAddr);
         // STATEL
         if( (iShmFd = shm_open(AREA_STATE_L, O_RDWR, 0600)) < 0)
         {  
@@ -178,7 +172,7 @@ int main(int argc, char *argv[]){
             fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
             return( -errno );
         };
-        sm_u = (char *)(vAddr);
+        sm_u = (double *)(vAddr);
     }
     else if (side == 'R'){
         // TVR
@@ -197,7 +191,7 @@ int main(int argc, char *argv[]){
             fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
             return( -errno );
         };
-        sm_tv = (char *)(vAddr);
+        sm_tv = (double *)(vAddr);
         // STATER
         if( (iShmFd = shm_open(AREA_STATE_R, O_RDWR, 0600)) < 0)
         {  
@@ -235,7 +229,7 @@ int main(int argc, char *argv[]){
             fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
             return( -errno );
         };
-        sm_u = (char *)(vAddr);
+        sm_u = (double *)(vAddr);
     }
     
     do
