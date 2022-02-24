@@ -5,8 +5,8 @@
 double dt = 0.01;
 
 // PI Constants
-double Kp = 1.0;
-double Ki = 1.0;
+double Kp = 0.1;
+double Ki = 0.0;
 // PI Variables
 double lastError = 0;
 double lastErrorInt = 0;
@@ -24,4 +24,17 @@ void stepPI(){
 
 // Main Function
 int main(int argc, char *argv[]){
+        
+    // Read TVL
+    // tv_l = 
+
+    // Read SLW
+    // state_l_w = 
+
+    stepPI();
+
+    // Write UL
+    // u_l
+
+    return EXIT_SUCCESS;
 }

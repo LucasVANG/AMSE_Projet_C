@@ -24,4 +24,17 @@ void stepPI(){
 
 // Main Function
 int main(int argc, char *argv[]){
+    
+    // Read TVR
+    // tv_r = 
+
+    // Read SRW
+    // state_r_w = 
+
+    stepPI();
+
+    // Write UR
+    // u_r 
+
+    return EXIT_SUCCESS;
 }
