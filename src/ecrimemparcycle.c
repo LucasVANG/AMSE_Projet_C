@@ -20,12 +20,9 @@
 #define STOP            "A"      /* ->chaine a saisir pour declencher l'arret */
 #define STR_LEN         256         /* ->taille par defaut des chaines           */
 
-void *vAddr1;                    /* ->adresse virtuelle sur la zone          */
-void *vAddr2;
+
 char *szInStr1;                  /* ->chaine saisie                          */
 char *szInStr2;
-int  iShmFd1;                    /* ->descripteur associe a la zone partagee */
-int iShmFd2;
 float valeurstab[]={1,1,1,1,1,0.8,0.6,0.4,0.2,0.2,0.4,0.6,0.8};
 int test=0;
 int  hh,                       /* ->heures                              */
@@ -77,6 +74,10 @@ void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itér
 /*#####################*/
 int main( int argc, char *argv[])
 {
+  void *vAddr1;                    /* ->adresse virtuelle sur la zone          */
+  void *vAddr2;
+  int  iShmFd1;                    /* ->descripteur associe a la zone partagee */
+  int iShmFd2;
 
 
 

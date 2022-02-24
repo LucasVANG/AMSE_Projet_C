@@ -23,7 +23,9 @@ int  hh,                       /* ->heures                              */
      mm,                       /* ->minutes                             */
      ss;                       /* ->secondes                            */
 int  GoOn = 1;                 /* ->controle d'execution                */
-char *szInStr;
+double W=0;
+double R=0;
+char *szInStr; 
 /*...................*/
 /* prototypes locaux */
 /*...................*/
@@ -54,7 +56,8 @@ void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itér
     
     /* affichage */
     printf("contenu de la zone = %s\n", szInStr);
-    //shm_unlink(AREA_NAME);
+    printf("W=%f,R=%f\n",W,R);
+    
 }
 
 
@@ -67,7 +70,14 @@ int main( int argc, char *argv[])
                         sa_old;  /* ->ancienne config de gestion d'alarme     */
   sigset_t              blocked; /* ->liste des signaux bloques               */
   struct itimerval      period;  /* ->periode de l'alarme cyclique            */
+  /*verif arguments*/
+  if(argc!=4){
+      printf("Nombre arguments invalides");
+      return (0);
+  }
   /* initialisation */
+  W=atof(argv[1]);
+  R=atof(argv[2]);
   sigemptyset( &blocked );
   memset( &sa, 0, sizeof( sigaction )); /* ->precaution utile... */
   sa.sa_handler = cycl_alm_handler;
@@ -76,15 +86,16 @@ int main( int argc, char *argv[])
   /* installation du gestionnaire de signal */
   sigaction(SIGALRM, &sa, NULL );
   /* initialisation de l'alarme  */
-  period.it_interval.tv_sec  = 1;  
-  period.it_interval.tv_usec = 0;
+  printf("%i",(int)atof(argv[3])*10000);
+  period.it_interval.tv_sec  = 0;  
+  period.it_interval.tv_usec = (int)atof(argv[3])*10000;
   period.it_value.tv_sec     = 1;
   period.it_value.tv_usec    = 0;
   /* demarrage de l'alarme */
   setitimer( ITIMER_REAL, &period, NULL );
   /* on ne fait desormais plus rien d'autre que */
   /* d'attendre les signaux                     */
-  void *vAddr;                    /* ->adresse virtuelle sur la zone          */
+    void *vAddr;                    /* ->adresse virtuelle sur la zone          */                 /* ->chaine saisie                          */
     int  iShmFd;                    /* ->descripteur associe a la zone partagee */
     /*..................................*/
     /* tentative d'acces a la zone */
@@ -106,13 +117,13 @@ int main( int argc, char *argv[])
         fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
         return( -errno );
     };
-    szInStr = (char *)(vAddr);
   do
   {
+    szInStr = (char *)(vAddr);
     pause();
   }
   while( GoOn == 1 );
   /* fini */
   printf("FIN DU DECOMPTE.\n");
-  return( 0 );  /* ->on n'arrive pas jusque la en pratique */
+  return( 0 );
 }

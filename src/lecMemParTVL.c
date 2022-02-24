@@ -23,6 +23,7 @@ int  hh,                       /* ->heures                              */
      mm,                       /* ->minutes                             */
      ss;                       /* ->secondes                            */
 int  GoOn = 1;                 /* ->controle d'execution                */
+char *szInStr;
 /*...................*/
 /* prototypes locaux */
 /*...................*/
@@ -50,30 +51,6 @@ void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itér
 {
     test++;
     printf("%i\n", test);
-    void *vAddr;                    /* ->adresse virtuelle sur la zone          */
-    char *szInStr;                  /* ->chaine saisie                          */
-    int  iShmFd;                    /* ->descripteur associe a la zone partagee */
-    /*..................................*/
-    /* tentative d'acces a la zone */
-    /*..................................*/
-    /* on essaie de se lier sans creer... */
-    if( (iShmFd = shm_open(AREA_NAME, O_RDWR, 0600)) < 0)
-    {  
-        fprintf(stderr,"ERREUR : ---> appel a shm_open()\n");
-        fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
-        return( -errno );
-    };
-    /* on attribue la taille a la zone partagee */
-    ftruncate(iShmFd, STR_LEN);
-    /* tentative de mapping de la zone dans l'espace memoire du */
-    /* processus                                                */
-    if( (vAddr = mmap(NULL, STR_LEN, PROT_READ | PROT_WRITE, MAP_SHARED, iShmFd, 0 ))  == NULL)
-    {
-        fprintf(stderr,"ERREUR : ---> appel a mmap()\n");
-        fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
-        return( -errno );
-    };
-    szInStr = (char *)(vAddr);
     /* affichage */
     printf("contenu de la zone = %s\n", szInStr);
     //shm_unlink(AREA_NAME);
@@ -106,6 +83,29 @@ int main( int argc, char *argv[])
   setitimer( ITIMER_REAL, &period, NULL );
   /* on ne fait desormais plus rien d'autre que */
   /* d'attendre les signaux                     */
+  void *vAddr;                    /* ->adresse virtuelle sur la zone          */                  /* ->chaine saisie                          */
+    int  iShmFd;                    /* ->descripteur associe a la zone partagee */
+    /*..................................*/
+    /* tentative d'acces a la zone */
+    /*..................................*/
+    /* on essaie de se lier sans creer... */
+    if( (iShmFd = shm_open(AREA_NAME, O_RDWR, 0600)) < 0)
+    {  
+        fprintf(stderr,"ERREUR : ---> appel a shm_open()\n");
+        fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
+        return( -errno );
+    };
+    /* on attribue la taille a la zone partagee */
+    ftruncate(iShmFd, STR_LEN);
+    /* tentative de mapping de la zone dans l'espace memoire du */
+    /* processus                                                */
+    if( (vAddr = mmap(NULL, STR_LEN, PROT_READ | PROT_WRITE, MAP_SHARED, iShmFd, 0 ))  == NULL)
+    {
+        fprintf(stderr,"ERREUR : ---> appel a mmap()\n");
+        fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
+        return( -errno );
+    };
+    szInStr = (char *)(vAddr);
   do
   {
     pause();
