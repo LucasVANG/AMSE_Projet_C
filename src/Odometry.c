@@ -7,41 +7,38 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/time.h>  
+#include <math.h>
 
 #include <ctype.h>
 #include <fcntl.h>
 #include <sys/mman.h>
-#include <sys/stat.h>      /* ->INDISPENSABLE pour les types tempo. */
-/*....................*/
-/* variables globales */
-/*....................*/
-#define AREA_NAME       "TVR"    /* ->nom de la zone partagee                 */
-#define AREA_NAME2      "VELOCITY"
-#define STOP            "A"      /* ->chaine a saisir pour declencher l'arret */
-#define STR_LEN         256         /* ->taille par defaut des chaines           */
-int test=0;
-int  hh,                       /* ->heures                              */
-     mm,                       /* ->minutes                             */
-     ss;                       /* ->secondes                            */
-int  GoOn = 1;                 /* ->controle d'execution                */
-double W=0;
-double R=0;
+#include <sys/stat.h>   
 
-/*...................*/
-/* prototypes locaux */
-/*...................*/
-typedef struct etat_moteur{
-  double i;
-  double w;
-}etat_moteur;
+
+#define AREA_NAME      "VELOCITY"
+#define AREA_NAME2       "POSITION"
+#define STOP            "A"      /* ->chaine a saisir pour declencher l'arret */
+#define STR_LEN         256                  /* ->controle d'execution                */
+
+typedef struct Coordonnees{
+    double x;
+    double y;
+    double theta;
+}Coordonnees;
 
 typedef struct vitesse{
     double v;
     double w;
 }vitesse;
 
-char *szInStr;
-vitesse *szInStr2; 
+
+vitesse *szInStr; 
+int  GoOn = 1; 
+double dt=0.01;
+
+Coordonnees oldCoord;
+
+Coordonnees * szInStr2;
 
 void usage( char *);           /* ->aide de ce programme                */
 void cycl_alm_handler( int );  /* ->gestionnaire pour l'alarme cyclique */
@@ -60,36 +57,35 @@ void usage( char *pgm_name )
   printf("exemple : \n");
   printf("%s 12 23 57\n", pgm_name );
 }
-/*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
-/* gestionnaire de l'alarme cyclique */
-/*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
 void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itération
 {
-    etat_moteur testMot;
-    testMot.i=1;
-    testMot.w=-1;
-    etat_moteur testMot2;
-    testMot2.i=1;
-    testMot2.w=1;
-    vitesse res;
-    res.v=(testMot.w+testMot2.w)*0.5*R;
-    res.w=(testMot.w-testMot2.w)*(1/W);
-    *szInStr2=res;
-    test++;
-    printf("%i\n", test);
+    vitesse testVit;
+    testVit.v=szInStr->v;
+    testVit.w=szInStr->w;
+    Coordonnees testCoord;
+    testCoord.theta=(oldCoord.theta+dt*testVit.w);
+    if(testCoord.theta> 6.28){
+        testCoord.theta-=6.28;
+    }
+    if(testCoord.theta<-6.28){
+        testCoord.theta+=6.28;
+    }
+    testCoord.x=oldCoord.x+sin(testCoord.theta)*dt*testVit.v;
+    testCoord.y=oldCoord.y+cos(testCoord.theta)*dt*testVit.v;
+    *szInStr2=testCoord;
+
+    oldCoord=testCoord;
+
 
     
     /* affichage */
-    printf("contenu de la zone = %s\n", szInStr);
-    printf("W=%f,R=%f\n",W,R);
-    printf("v=%f,w=%f\n",res.v,res.w);
-    
+    printf("v=%f,w=%f\n",testVit.v,testVit.w);
+    printf("x=%f,y=%f,theta=%f",szInStr2->x,szInStr2->y,szInStr2->theta);
+   
+
+
+
 }
-
-
-/*#####################*/
-/* programme principal */
-/*#####################*/
 int main( int argc, char *argv[])
 {
   struct sigaction      sa,      /* ->configuration de la gestion de l'alarme */
@@ -97,13 +93,10 @@ int main( int argc, char *argv[])
   sigset_t              blocked; /* ->liste des signaux bloques               */
   struct itimerval      period;  /* ->periode de l'alarme cyclique            */
   /*verif arguments*/
-  if(argc!=4){
-      printf("Nombre arguments invalides");
-      return (0);
-  }
+
+
   /* initialisation */
-  W=atof(argv[1]);
-  R=atof(argv[2]);
+
   sigemptyset( &blocked );
   memset( &sa, 0, sizeof( sigaction )); /* ->precaution utile... */
   sa.sa_handler = cycl_alm_handler;
@@ -114,17 +107,10 @@ int main( int argc, char *argv[])
   /* initialisation de l'alarme  */
   
  
-  if((int)atof(argv[3])>=100){
-    printf("%i",(int)atof(argv[3])/100);
-    period.it_interval.tv_sec  = (int)atof(argv[3])/100;  
-    period.it_interval.tv_usec = 0;
-  }
-  else {
-    printf("%f",atof(argv[3])*10000);
-    period.it_interval.tv_sec  = 0;  
-    period.it_interval.tv_usec = (double)atof(argv[3])*10000;
-  }
- 
+
+    
+  period.it_interval.tv_sec  = 0 ;
+  period.it_interval.tv_usec = dt*1000000;
   period.it_value.tv_sec     = 1;
   period.it_value.tv_usec    = 0;
   /* demarrage de l'alarme */
@@ -156,7 +142,7 @@ int main( int argc, char *argv[])
         return( -errno );
     };
 
-    // ecriture vitesse
+    // ecriture coord
     if( (iShmFd2 = shm_open(AREA_NAME2, O_RDWR | O_CREAT, 0600)) < 0)
     {
         /* on essaie de se lier sans creer... */
@@ -178,8 +164,10 @@ int main( int argc, char *argv[])
         fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
         return( -errno );
     };
-    szInStr2 = (vitesse *)(vAddr2);
-    szInStr = (char *)(vAddr);
+    szInStr2 = (Coordonnees *)(vAddr2);
+
+    
+    szInStr = (vitesse *)(vAddr);
   do
   {
     
