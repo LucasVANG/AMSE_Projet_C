@@ -22,7 +22,7 @@
 
 FILE *fp;
 int nbCoord=0;
-int nbPrint=0;
+int allowPrint=0;
 
 typedef struct Coordonnees{
     double x;
@@ -63,6 +63,7 @@ void usage( char *pgm_name )
 }
 void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itération
 {
+  if ( signal == SIGALRM ){
     vitesse testVit;
     testVit.v=szInStr->v;
     testVit.w=szInStr->w;
@@ -85,43 +86,53 @@ void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itér
     /* affichage */
     printf("v=%f,w=%f\n",testVit.v,testVit.w);
     printf("x=%f,y=%f,theta=%f",szInStr2->x,szInStr2->y,szInStr2->theta);
-      if (nbCoord==100){
-        fprintf(fp, "x=%f,y=%f,theta=%f;\n",szInStr2->x,szInStr2->y,szInStr2->theta);
-        nbPrint++;
-        nbCoord=0;
-
-      }
-      nbCoord++;
-      if(nbPrint>10){
-        fclose(fp);
-
-      }
+    if (nbCoord>=100&&allowPrint==0){
+      fprintf(fp, "x=%f,y=%f,theta=%f;\n",szInStr2->x,szInStr2->y,szInStr2->theta);
+      nbCoord=0;
+    }
+    nbCoord++;
+    
   
 
-   
+  }
+  if ( signal == SIGUSR2){
+    if(allowPrint==0){
+      fclose(fp);
+      allowPrint=1;
+    }
+    else if(allowPrint==1){
+      fp = fopen("Output.txt", "a");
+    }
 
-
-
+  }
 }
+
+
+
 int main( int argc, char *argv[])
 {
-  struct sigaction      sa,      /* ->configuration de la gestion de l'alarme */
-                        sa_old;  /* ->ancienne config de gestion d'alarme     */
-  sigset_t              blocked; /* ->liste des signaux bloques               */
-  struct itimerval      period;  /* ->periode de l'alarme cyclique            */
-  /*verif arguments*/
+
 
 
   /* initialisation */
-
-  sigemptyset( &blocked );
-  memset( &sa, 0, sizeof( sigaction )); /* ->precaution utile... */
-  sa.sa_handler = cycl_alm_handler;
-  sa.sa_flags   = 0;
-  sa.sa_mask    = blocked;
+  struct sigaction sa;
+  sigset_t blocked;
+  struct itimerval period;
+  
   /* installation du gestionnaire de signal */
   sigaction(SIGALRM, &sa, NULL );
+  sigaction( SIGUSR2, &sa, NULL );
   /* initialisation de l'alarme  */
+      // Gestion de signal
+    sigemptyset( &blocked );
+    memset( &sa, 0, sizeof(struct sigaction));
+    sa.sa_handler = cycl_alm_handler;
+    sa.sa_flags = 0;
+    sa.sa_mask = blocked;
+    //
+    sigaction( SIGUSR2, &sa, NULL );
+    //
+    sigaction(SIGALRM, &sa, NULL );
   
  
 
@@ -132,6 +143,10 @@ int main( int argc, char *argv[])
   period.it_value.tv_usec    = 0;
   /* demarrage de l'alarme */
   setitimer( ITIMER_REAL, &period, NULL );
+
+
+
+
   /* on ne fait desormais plus rien d'autre que */
   /* d'attendre les signaux                     */
     void *vAddr;                    /* ->adresse virtuelle sur la zone          */
