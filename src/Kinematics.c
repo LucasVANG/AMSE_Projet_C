@@ -15,11 +15,9 @@
 /*....................*/
 /* variables globales */
 /*....................*/
-#define AREA_NAME       "TVR"    /* ->nom de la zone partagee                 */
 #define AREA_STATE_L   "STATEL"
 #define AREA_STATE_R   "STATER"
 #define AREA_NAME2      "VELOCITY"
-#define STOP            "A"      /* ->chaine a saisir pour declencher l'arret */
 #define STR_LEN         256         /* ->taille par defaut des chaines           */
 int test=0;
 int  hh,                       /* ->heures                              */

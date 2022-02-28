@@ -53,9 +53,6 @@ void usage( char *pgm_name )
 }
 
 
-void resetState(){
-
-}
 /*#####################*/
 /* programme principal */
 /*#####################*/
