@@ -32,6 +32,12 @@ Commentaire : Compiler le programme avec cette commande : gcc DCMoteur.c -o ../b
 /*----------*/
 /* globales */
 /*----------*/
+typedef struct etat_moteur{
+  double i;
+  double w;
+}etat_moteur;
+
+
 int     GoOn = 1;       /* ->controle d'execution du processus */
 double  a11,            /* ->coeff du modele d'etat du moteur  */
         a12,            /* ->coeff du modele d'etat du moteur  */
@@ -40,12 +46,14 @@ double  a11,            /* ->coeff du modele d'etat du moteur  */
         b11,            /* ->coeff du modele d'etat du moteur  */
         z1,             /*->coeff. pour la recurrence */
         b1;             /*->coeff. pour la recurrence */
-bool etat_regPID = true;
+bool etat_DCMoteur = true;
 
 // Variable mémoire partagée
-double *share_u;
-double *share_w;
-double *share_i;
+etat_moteur* sm_state;
+double *sm_u;
+double *sm_w;
+double *sm_i;
+
 
 
 /*--------------*/
@@ -126,16 +134,16 @@ void updateState( void )
     double i_new;   /* ->nouvelle valeur du courant              */
     
     /* photo.. */
-    u = *share_u;
-    i = *share_i;
-    w = *share_w;
+    u = *sm_u;
+    i = *sm_i;
+    w = *sm_w;
 
     /* calcul */
     i_new = CalculIkplus1(i, w, u);
     w_new = CalculWkplus1(z1, w, b1, i);
     /* mise a jour */
-    *share_i = i_new;
-    *share_w = w_new;
+    *sm_i = i_new;
+    *sm_w = w_new;
 }
 
 
@@ -196,19 +204,17 @@ void SignalHandler( int signal )
 {
     // SIGUSR2 -> PID ON/OFF
     if ( signal == SIGUSR2 ){
-        etat_regPID = !etat_regPID;
-        if (etat_regPID) {
+        etat_DCMoteur = !etat_DCMoteur;
+        if (etat_DCMoteur) {
             printf("ON\n");
             GoOn = 1;
             }
         else {
             printf("OFF\n");
-            GoOn = 0;
-            }
-        if (etat_regPID){
             printf("reset\n");
             resetModel();
-        }
+            GoOn = 0;
+            }
     }
     if( signal == SIGALRM)
     {
@@ -225,7 +231,7 @@ int main(int argc, char *argv[]){
     int     iFdCmd;                         /* ->descripteur pour la zone de commande           */
     int     iFdState;                       /* ->descripteur pour la zone d'etat                */
     int     iLoops = 0;                     /* ->compte le nombre d'iterations effectuees       */
-    double  *lpdb_state;                    /* ->pointeur sur la zone partagee contenant l'etat */
+    double  *etat_moteur;                    /* ->pointeur sur la zone partagee contenant l'etat */
     double  r;                              /* ->resistance de l'induit                         */
     double  l;                              /* ->inductance                                     */
     double  Ke;                             /* ->constante electrique                           */
@@ -331,7 +337,7 @@ int main(int argc, char *argv[]){
         fprintf(stderr,"             code = %d (%s)\n", errno, (char *)(strerror(errno)));
         exit( -errno );
     };
-    if((share_u = (double *)(mmap(NULL, sizeof(double), PROT_READ | PROT_WRITE, MAP_SHARED, iFdCmd, 0))) == MAP_FAILED )
+    if((sm_u = (double *)(mmap(NULL, sizeof(double), PROT_READ | PROT_WRITE, MAP_SHARED, iFdCmd, 0))) == MAP_FAILED )
     {
         fprintf(stderr,"%s.main() :  ERREUR ---> appel a mmap() #1\n", argv[0]);
         fprintf(stderr,"             code = %d (%s)\n", errno, (char *)(strerror(errno)));
@@ -361,14 +367,14 @@ int main(int argc, char *argv[]){
         fprintf(stderr,"             code = %d (%s)\n", errno, (char *)(strerror(errno)));
         exit( -errno );
     };
-    if((lpdb_state = (double *)(mmap(NULL, 2 * sizeof(double), PROT_READ | PROT_WRITE, MAP_SHARED, iFdState, 0))) == MAP_FAILED )
+    if((etat_moteur = (double *)(mmap(NULL, 2 * sizeof(double), PROT_READ | PROT_WRITE, MAP_SHARED, iFdState, 0))) == MAP_FAILED )
     {
         fprintf(stderr,"%s.main() :  ERREUR ---> appel a mmap() #2\n", argv[0]);
         fprintf(stderr,"             code = %d (%s)\n", errno, (char *)(strerror(errno)));
         exit( -errno );
     };
-    share_w = &lpdb_state[OFFSET_W];
-    share_i = &lpdb_state[OFFSET_I];
+    sm_w = &etat_moteur[OFFSET_W];
+    sm_i = &etat_moteur[OFFSET_I];
     /*............................................*/
     /* installation de la routine d'interception  */
     /*............................................*/
@@ -412,7 +418,7 @@ int main(int argc, char *argv[]){
         pause();
         if( (iLoops % (int)(REFRESH_RATE)) == 0)
         {
-            //printf("u = %lf w = %lf i = %lf side = %c\n", *share_u, *share_w, *share_i, cDriveID);
+            printf("u = %lf w = %lf i = %lf side = %c\n", *sm_u, *sm_w, *sm_i, cDriveID);
         };
         iLoops++;
     }
