@@ -21,9 +21,9 @@
 #define STR_LEN         256         /* ->taille par defaut des chaines           */
 
 
-char *szInStr1;                  /* ->chaine saisie                          */
-char *szInStr2;
-float valeurstab[]={1,1,1,1,1,0.8,0.6,0.4,0.2,0.2,0.4,0.6,0.8};
+double *szInStr1;                  /* ->chaine saisie                          */
+double *szInStr2;
+float valeurstab[]={1,1,1,1,1,1,1,1,1,1,1,1,1};
 int test=0;
 int  hh,                       /* ->heures                              */
      mm,                       /* ->minutes                             */
@@ -57,11 +57,11 @@ void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itér
     
     /* saisie */
     
-        gcvt(valeurstab[test],3,szInStr1);
-        printf("Valeur inscrite dans la mémoire=%s\n",szInStr1);
+        *szInStr1 = valeurstab[test];
+        printf("Valeur inscrite dans la mémoire=%.2f\n",*szInStr1);
         printf("indice dans le tableau de valeur test=%i\n", test);
-        gcvt(valeurstab[test]+1,3,szInStr2);
-        printf("Valeur inscrite dans la mémoire=%s\n",szInStr2);
+        *szInStr2 = valeurstab[test];
+        printf("Valeur inscrite dans la mémoire=%.2f\n",*szInStr2);
         printf("indice dans le tableau de valeur test=%i\n", test)+1;
         test++;
         test=test%13;
@@ -106,7 +106,7 @@ int main( int argc, char *argv[])
         fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
         return( -errno );
     };
-    szInStr1 = (char *)(vAddr1);
+    szInStr1 = (double *)(vAddr1);
 
     /*..................................*/
     /* tentative de creation de la zone */
@@ -132,7 +132,7 @@ int main( int argc, char *argv[])
         fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
         return( -errno );
     };
-    szInStr2 = (char *)(vAddr2);
+    szInStr2 = (double *)(vAddr2);
 
 
 
@@ -162,16 +162,16 @@ int main( int argc, char *argv[])
   do
   {
     pause();
-    if( strcmp(szInStr1,STOP) == 0 )
-      {
-          printf("FIN zone 1\n");
-          shm_unlink(AREA_NAME1);
-      }
-    if( strcmp(szInStr1,STOP) == 0 )
-      {
-          printf("FIN zone 1\n");
-            shm_unlink(AREA_NAME1);
-        };
+    // if( strcmp(szInStr1,STOP) == 0 )
+    //   {
+    //       printf("FIN zone 1\n");
+    //       shm_unlink(AREA_NAME1);
+    //   }
+    // if( strcmp(szInStr1,STOP) == 0 )
+    //   {
+    //       printf("FIN zone 1\n");
+    //         shm_unlink(AREA_NAME1);
+    //     };
   }
   while( GoOn == 1 );
   /* fini */

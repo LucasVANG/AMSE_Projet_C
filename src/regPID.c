@@ -63,6 +63,7 @@ void stepPI(){
 
     // Write Shared Memory
     *sm_u = u;
+    printf("TV=%.2f, State=%.2f, U=%.2f, Side = %c\n",tv,state_w,u,side);
 }
 
 // Routines de signaux
@@ -78,7 +79,7 @@ void signal_handler( int signal )
         }
     }
     if ( signal == SIGALRM ){
-        printf("Update\n");
+        stepPI();
     }
 }
 
