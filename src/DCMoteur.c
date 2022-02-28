@@ -181,7 +181,7 @@ double CalculIkplus1(double ik, double wk, double uk){
     double nombre2;
     double nombre3;
     nombre1 = a11 * ik;
-    nombre2 = a12 * wk;
+    nombre2 = a12 * wk * b11;
     nombre3 = b11 * uk;
 
     ikplus1 = nombre1 - nombre2 + nombre3;
