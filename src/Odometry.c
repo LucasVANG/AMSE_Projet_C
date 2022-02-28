@@ -74,3 +74,144 @@ void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itér
     }
     if(testCoord.theta<-6.28){
         testCoord.theta+=6.28;
+    }
+    testCoord.x=oldCoord.x+sin(testCoord.theta)*dt*testVit.v;
+    testCoord.y=oldCoord.y+cos(testCoord.theta)*dt*testVit.v;
+    *szInStr2=testCoord;
+
+    oldCoord=testCoord;
+
+
+    
+    /* affichage */
+    printf("v=%f,w=%f\n",testVit.v,testVit.w);
+    printf("x=%f,y=%f,theta=%f",szInStr2->x,szInStr2->y,szInStr2->theta);
+    if (nbCoord>=100&&allowPrint==0){
+      fprintf(fp, "%f,%f,%f\n",szInStr2->x,szInStr2->y,szInStr2->theta);
+      fflush(fp);
+      nbCoord=0;
+    }
+    nbCoord++;
+    
+  
+
+  }
+  if ( signal == SIGUSR2){
+    if(allowPrint==0){
+      fclose(fp);
+      allowPrint=1;
+    }
+    else if(allowPrint==1){
+      fp = fopen("Output.txt", "a");
+      fflush(fp);
+      allowPrint=0;
+    }
+
+  }
+}
+
+
+
+int main( int argc, char *argv[])
+{
+
+
+
+  /* initialisation */
+  struct sigaction sa;
+  sigset_t blocked;
+  struct itimerval period;
+  
+  /* installation du gestionnaire de signal */
+  sigaction(SIGALRM, &sa, NULL );
+  sigaction( SIGUSR2, &sa, NULL );
+  /* initialisation de l'alarme  */
+      // Gestion de signal
+    sigemptyset( &blocked );
+    memset( &sa, 0, sizeof(struct sigaction));
+    sa.sa_handler = cycl_alm_handler;
+    sa.sa_flags = 0;
+    sa.sa_mask = blocked;
+    //
+    sigaction( SIGUSR2, &sa, NULL );
+    //
+    sigaction(SIGALRM, &sa, NULL );
+  
+ 
+
+    
+  period.it_interval.tv_sec  = 0 ;
+  period.it_interval.tv_usec = dt*1000000;
+  period.it_value.tv_sec     = 1;
+  period.it_value.tv_usec    = 0;
+  /* demarrage de l'alarme */
+  setitimer( ITIMER_REAL, &period, NULL );
+
+
+
+
+  /* on ne fait desormais plus rien d'autre que */
+  /* d'attendre les signaux                     */
+    void *vAddr;                    /* ->adresse virtuelle sur la zone          */
+    void *vAddr2;                
+    int  iShmFd;                    /* ->descripteur associe a la zone partagee */
+    int  iShmFd2;
+    /*..................................*/
+    /* tentative d'acces a la zone */
+    /*..................................*/
+    /* on essaie de se lier sans creer... */
+    if( (iShmFd = shm_open(AREA_NAME, O_RDWR, 0600)) < 0)
+    {  
+        fprintf(stderr,"ERREUR : ---> appel a shm_open()\n");
+        fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
+        return( -errno );
+    };
+    /* on attribue la taille a la zone partagee */
+    ftruncate(iShmFd, STR_LEN);
+    /* tentative de mapping de la zone dans l'espace memoire du */
+    /* processus                                                */
+    if( (vAddr = mmap(NULL, STR_LEN, PROT_READ | PROT_WRITE, MAP_SHARED, iShmFd, 0 ))  == NULL)
+    {
+        fprintf(stderr,"ERREUR : ---> appel a mmap()\n");
+        fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
+        return( -errno );
+    };
+
+    // ecriture coord
+    if( (iShmFd2 = shm_open(AREA_NAME2, O_RDWR | O_CREAT, 0600)) < 0)
+    {
+        /* on essaie de se lier sans creer... */
+        printf("echec de creation, lien seul...\n");
+        if( (iShmFd2 = shm_open(AREA_NAME2, O_RDWR, STR_LEN)) < 0)
+        {  
+            fprintf(stderr,"ERREUR : ---> appel a shm_open()\n");
+            fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
+            return( -errno );
+        };
+    };
+    /* on attribue la taille a la zone partagee */
+    ftruncate(iShmFd2, STR_LEN);
+    /* tentative de mapping de la zone dans l'espace memoire du */
+    /* processus                                                */
+    if( (vAddr2 = mmap(NULL, STR_LEN, PROT_READ | PROT_WRITE, MAP_SHARED, iShmFd2, 0 ))  == NULL)
+    {
+        fprintf(stderr,"ERREUR : ---> appel a mmap()\n");
+        fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
+        return( -errno );
+    };
+    szInStr2 = (Coordonnees *)(vAddr2);
+
+    
+    szInStr = (vitesse *)(vAddr);
+    fp = fopen("Output.txt", "w");
+    fprintf(fp,"x,y,theta\n");
+  do
+  {
+    
+    pause();
+  }
+  while( GoOn == 1 );
+  /* fini */
+  printf("FIN DU DECOMPTE.\n");
+  return( 0 );
+}
