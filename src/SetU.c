@@ -17,7 +17,6 @@
 /*....................*/
 #define AREA_NAME       "UR"    /* ->nom de la zone partagee                 */
 #define AREA_NAME2      "UL"
-#define STOP            "A"      /* ->chaine a saisir pour declencher l'arret */
 #define STR_LEN         256         /* ->taille par defaut des chaines           */
 int test=0;
 int  hh,                       /* ->heures                              */
@@ -35,7 +34,6 @@ double *szInStr;
 
 
 void usage( char *);           /* ->aide de ce programme                */
-void cycl_alm_handler( int );  /* ->gestionnaire pour l'alarme cyclique */
 /*&&&&&&&&&&&&&&&&&&&&&&*/
 /* aide de ce programme */
 /*&&&&&&&&&&&&&&&&&&&&&&*/
@@ -50,14 +48,6 @@ void usage( char *pgm_name )
   printf("jusque 0 en affichant les secondes.\n");
   printf("exemple : \n");
   printf("%s 12 23 57\n", pgm_name );
-}
-/*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
-/* gestionnaire de l'alarme cyclique */
-/*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
-void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itération
-{
-    
-    
 }
 
 
