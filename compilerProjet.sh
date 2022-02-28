@@ -3,8 +3,8 @@
 echo "[COMPILER SCRIPT] ######### Programme de compilation du projet AMSE_C #########"
 echo "[COMPILER SCRIPT] Processus de compilation démarré"
 
-if [ -d "bin" ]
-then
+if [ -d "bin" ];then
+echo "[COMPILER SCRIPT] Fichier bin existant"
 else
 	echo "[COMPILER SCRIPT] Dossier 'bin' pas trouvé, création fichier 'bin'."
     mkdir bin
@@ -22,4 +22,5 @@ cmake ..
 echo "[COMPILER SCRIPT] Compilation des fichiers Cmake"
 make
 echo "[COMPILER SCRIPT] Processus de compilation terminé, les fichiers binaires sont dans le dossier 'bin'."
+rm -r ../build/
 exit

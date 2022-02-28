@@ -1,1 +1,0 @@
-/usr/bin/cc CMakeFiles/Odometry.dir/src/Odometry.c.o -o ../bin/Odometry  -lm -lrt 

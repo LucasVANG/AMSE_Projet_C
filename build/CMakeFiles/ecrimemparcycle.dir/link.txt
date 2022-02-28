@@ -1,1 +1,0 @@
-/usr/bin/cc CMakeFiles/ecrimemparcycle.dir/src/ecrimemparcycle.c.o -o ../bin/ecrimemparcycle  -lm -lrt 
