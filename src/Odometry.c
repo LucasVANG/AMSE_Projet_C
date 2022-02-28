@@ -20,6 +20,10 @@
 #define STOP            "A"      /* ->chaine a saisir pour declencher l'arret */
 #define STR_LEN         256                  /* ->controle d'execution                */
 
+FILE *fp;
+int nbCoord=0;
+int nbPrint=0;
+
 typedef struct Coordonnees{
     double x;
     double y;
@@ -81,6 +85,19 @@ void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itér
     /* affichage */
     printf("v=%f,w=%f\n",testVit.v,testVit.w);
     printf("x=%f,y=%f,theta=%f",szInStr2->x,szInStr2->y,szInStr2->theta);
+      if (nbCoord==100){
+        fprintf(fp, "x=%f,y=%f,theta=%f;\n",szInStr2->x,szInStr2->y,szInStr2->theta);
+        nbPrint++;
+        nbCoord=0;
+
+      }
+      nbCoord++;
+      if(nbPrint>10){
+        fclose(fp);
+
+      }
+  
+
    
 
 
@@ -168,6 +185,7 @@ int main( int argc, char *argv[])
 
     
     szInStr = (vitesse *)(vAddr);
+    fp = fopen("Output.txt", "w");
   do
   {
     
