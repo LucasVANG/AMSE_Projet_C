@@ -100,5 +100,6 @@ void usage( char *szPgmName)
     /* fonctionnement normal */
     /*************************/
     *lpdb_Tv = Tv;
+    printf("Valeur de Tv mise à jour, nouvelle valeur = ", Tv);
     return( 0 );   
 }

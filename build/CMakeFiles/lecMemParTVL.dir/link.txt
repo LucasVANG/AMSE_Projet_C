@@ -1,0 +1,1 @@
+/usr/bin/cc  -lm -lrt CMakeFiles/lecMemParTVL.dir/src/lecMemParTVL.c.o -o ../bin/lecMemParTVL 
