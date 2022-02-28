@@ -23,9 +23,6 @@ typedef struct etat_moteur{
 #define STR_LEN         256         /* ->taille par defaut des chaines           */
 #define NB_ARGS         1               /* ->nombre d'arguments a passer en ligne de commande                            */
 
-int  GoOn = 1;                 /* ->controle d'execution                */
-
-
 // Variable mémoire partagée
 etat_moteur* sm_state;
 
