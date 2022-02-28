@@ -1,1 +1,1 @@
-/usr/bin/cc  -lm -lrt CMakeFiles/lectempkine.dir/src/lectempkine.c.o -o ../bin/lectempkine 
+/usr/bin/cc CMakeFiles/lectempkine.dir/src/lectempkine.c.o -o ../bin/lectempkine  -lm -lrt 

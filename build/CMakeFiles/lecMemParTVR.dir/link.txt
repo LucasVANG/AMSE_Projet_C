@@ -1,1 +1,1 @@
-/usr/bin/cc  -lm -lrt CMakeFiles/lecMemParTVR.dir/src/lecMemParTVR.c.o -o ../bin/lecMemParTVR 
+/usr/bin/cc CMakeFiles/lecMemParTVR.dir/src/lecMemParTVR.c.o -o ../bin/lecMemParTVR  -lm -lrt 

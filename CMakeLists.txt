@@ -3,9 +3,6 @@ cmake_minimum_required(VERSION 3.10)
 # set the project name and version
 project(AMSE_ProjetC VERSION 1.0)
 
-# on spécifie des options pour le compilateur
-string(APPEND CMAKE_C_FLAGS " -lm -lrt")
-
 # on spécifie où seront les fichiers binaires 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../bin/")
 
@@ -20,5 +17,17 @@ add_executable(Odometry ${PROJECT_SOURCE_DIR}/src/Odometry.c)
 add_executable(regPID ${PROJECT_SOURCE_DIR}/src/regPID.c)
 add_executable(ResetState ${PROJECT_SOURCE_DIR}/src/ResetState.c)
 
+# on spécifie des options pour le compilateur
+target_link_libraries(DCMoteur m rt)
+target_link_libraries(ecrimemparcycle m rt)
+target_link_libraries(Kinematics m rt)
+target_link_libraries(lecMemParTVL m rt)
+target_link_libraries(lecMemParTVR m rt)
+target_link_libraries(lectempkine m rt)
+target_link_libraries(Odometry m rt)
+target_link_libraries(regPID m rt)
+target_link_libraries(ResetState m rt)
 
-message(STATUS "PROJECT SOURCE DIR = ${PROJECT_SOURCE_DIR}")
+
+message(STATUS "CHEMIN DU PROJET = ${PROJECT_SOURCE_DIR}")
+message(STATUS "AUTEURS DU PROJETS = Fabien Plouvier, Quentin Waramer, Lucas Vangaeveren, Quentin Delezenne")

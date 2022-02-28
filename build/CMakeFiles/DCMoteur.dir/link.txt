@@ -1,1 +1,1 @@
-/usr/bin/cc  -lm -lrt CMakeFiles/DCMoteur.dir/src/DCMoteur.c.o -o ../bin/DCMoteur 
+/usr/bin/cc CMakeFiles/DCMoteur.dir/src/DCMoteur.c.o -o ../bin/DCMoteur  -lm -lrt 

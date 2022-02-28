@@ -1,1 +1,1 @@
-/usr/bin/cc  -lm -lrt CMakeFiles/ResetState.dir/src/ResetState.c.o -o ../bin/ResetState 
+/usr/bin/cc CMakeFiles/ResetState.dir/src/ResetState.c.o -o ../bin/ResetState  -lm -lrt 
