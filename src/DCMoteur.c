@@ -25,8 +25,8 @@ Commentaire : Compiler le programme avec cette commande : gcc DCMoteur.c -o ../b
 #define STATE_BASENAME  "STATE"    /* ->nom de la zone partagee pour STATEL et STATER                */
 #define NB_ARGS         9               /* ->nombre d'arguments a passer en ligne de commande                            */
 #define REFRESH_RATE    50              /* ->nombre d'iterations a realiser pour 1 affichage de l'etat et de la commande */
-#define OFFSET_W        0               /* ->offset sur la zone d'etat pour acceder a la vitesse angulaire               */
-#define OFFSET_I        1               /* ->offset sur la zone d'etat pour acceder a l'intensite                        */
+#define OFFSET_W        1               /* ->offset sur la zone d'etat pour acceder a la vitesse angulaire               */
+#define OFFSET_I        0               /* ->offset sur la zone d'etat pour acceder a l'intensite                        */
 #define STR_LEN         256         /* ->taille par defaut des chaines           */
 
 /*----------*/
