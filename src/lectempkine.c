@@ -15,7 +15,7 @@
 /*....................*/
 /* variables globales */
 /*....................*/
-#define AREA_NAME       "VELOCITY"    /* ->nom de la zone partagee                 */
+#define AREA_NAME       "POSITION"    /* ->nom de la zone partagee                 */
 #define STOP            "A"      /* ->chaine a saisir pour declencher l'arret */
 #define STR_LEN         256         /* ->taille par defaut des chaines           */
 int test=0;
@@ -33,12 +33,13 @@ void cycl_alm_handler( int );  /* ->gestionnaire pour l'alarme cyclique */
 /* aide de ce programme */
 /*&&&&&&&&&&&&&&&&&&&&&&*/
 
-typedef struct vitesse{
-    double v;
-    double w;
-}vitesse;
+typedef struct Coordonnees{
+    double x;
+    double y;
+    double theta;
+}Coordonnees;
 
-vitesse *szInStr;
+Coordonnees *szInStr;
 
 void usage( char *pgm_name )
 {
@@ -60,7 +61,7 @@ void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itér
     test++;
     printf("%i\n", test);
     /* affichage */
-    printf("contenu de la zone = %f %f\n", szInStr->v,szInStr->w);
+    printf("contenu de la zone x= %f y= %f theta=%f\n", szInStr->x,szInStr->y,szInStr->theta);
     //shm_unlink(AREA_NAME);
 }
 
@@ -113,7 +114,7 @@ int main( int argc, char *argv[])
         fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
         return( -errno );
     };
-    szInStr = (vitesse *)(vAddr);
+    szInStr = (Coordonnees*)(vAddr);
   do
   {
     pause();
