@@ -1,0 +1,1 @@
+/usr/bin/cc  -lm -lrt CMakeFiles/regPID.dir/src/regPID.c.o -o ../bin/regPID 

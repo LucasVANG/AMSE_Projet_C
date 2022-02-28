@@ -1,0 +1,1 @@
+/usr/bin/cc  -lm -lrt CMakeFiles/Kinematics.dir/src/Kinematics.c.o -o ../bin/Kinematics 
