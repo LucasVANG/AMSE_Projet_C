@@ -16,6 +16,8 @@
 /* variables globales */
 /*....................*/
 #define AREA_NAME       "TVR"    /* ->nom de la zone partagee                 */
+#define AREA_STATE_L   "STATEL"
+#define AREA_STATE_R   "STATER"
 #define AREA_NAME2      "VELOCITY"
 #define STOP            "A"      /* ->chaine a saisir pour declencher l'arret */
 #define STR_LEN         256         /* ->taille par defaut des chaines           */
@@ -40,7 +42,8 @@ typedef struct vitesse{
     double w;
 }vitesse;
 
-char *szInStr;
+etat_moteur *mot1;
+etat_moteur *mot2;
 vitesse *szInStr2; 
 
 void usage( char *);           /* ->aide de ce programme                */
@@ -65,22 +68,17 @@ void usage( char *pgm_name )
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
 void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itération
 {
-    etat_moteur testMot;
-    testMot.i=1;
-    testMot.w=-1;
-    etat_moteur testMot2;
-    testMot2.i=1;
-    testMot2.w=1;
+   
     vitesse res;
-    res.v=(testMot.w+testMot2.w)*0.5*R;
-    res.w=(testMot.w-testMot2.w)*(1/W);
+    res.v=(mot2->w+mot1->w)*0.5*R;
+    res.w=(mot2->w-mot1->w)*(1/W);
     *szInStr2=res;
     test++;
     printf("%i\n", test);
 
     
     /* affichage */
-    printf("contenu de la zone = %s\n", szInStr);
+    printf("contenu de la zone L= i=%f\n w=%f\n", mot1->i,mot1->w);
     printf("W=%f,R=%f\n",W,R);
     printf("v=%f,w=%f\n",res.v,res.w);
     
@@ -139,7 +137,7 @@ int main( int argc, char *argv[])
     /* tentative d'acces a la zone */
     /*..................................*/
     /* on essaie de se lier sans creer... */
-    if( (iShmFd = shm_open(AREA_NAME, O_RDWR, 0600)) < 0)
+    if( (iShmFd = shm_open(AREA_STATE_L, O_RDWR, 0600)) < 0)
     {  
         fprintf(stderr,"ERREUR : ---> appel a shm_open()\n");
         fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
@@ -155,6 +153,28 @@ int main( int argc, char *argv[])
         fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
         return( -errno );
     };
+    mot1 = (etat_moteur *)(vAddr);
+
+
+
+        if( (iShmFd = shm_open(AREA_STATE_R, O_RDWR, 0600)) < 0)
+    {  
+        fprintf(stderr,"ERREUR : ---> appel a shm_open()\n");
+        fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
+        return( -errno );
+    };
+    /* on attribue la taille a la zone partagee */
+    ftruncate(iShmFd, STR_LEN);
+    /* tentative de mapping de la zone dans l'espace memoire du */
+    /* processus                                                */
+    if( (vAddr = mmap(NULL, STR_LEN, PROT_READ | PROT_WRITE, MAP_SHARED, iShmFd, 0 ))  == NULL)
+    {
+        fprintf(stderr,"ERREUR : ---> appel a mmap()\n");
+        fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
+        return( -errno );
+    };
+    mot2 = (etat_moteur *)(vAddr);
+
 
     // ecriture vitesse
     if( (iShmFd2 = shm_open(AREA_NAME2, O_RDWR | O_CREAT, 0600)) < 0)
@@ -179,7 +199,7 @@ int main( int argc, char *argv[])
         return( -errno );
     };
     szInStr2 = (vitesse *)(vAddr2);
-    szInStr = (char *)(vAddr);
+    
   do
   {
     
