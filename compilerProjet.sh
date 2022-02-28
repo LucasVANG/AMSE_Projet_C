@@ -5,12 +5,6 @@ echo "[COMPILER SCRIPT] Processus de compilation démarré"
 
 if [ -d "bin" ]
 then
-	if [ "$(ls -A bin)" ]; then
-        echo "[COMPILER SCRIPT] Dossier 'bin' NON vide, suppression des élèments."
-        rm -r bin/*
-	else
-        echo "[COMPILER SCRIPT] Dossier 'bin' vide."
-	fi
 else
 	echo "[COMPILER SCRIPT] Dossier 'bin' pas trouvé, création fichier 'bin'."
     mkdir bin

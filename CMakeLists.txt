@@ -16,6 +16,8 @@ add_executable(lectempkine ${PROJECT_SOURCE_DIR}/src/lectempkine.c)
 add_executable(Odometry ${PROJECT_SOURCE_DIR}/src/Odometry.c)
 add_executable(regPID ${PROJECT_SOURCE_DIR}/src/regPID.c)
 add_executable(ResetState ${PROJECT_SOURCE_DIR}/src/ResetState.c)
+add_executable(cmd_go ${PROJECT_SOURCE_DIR}/src/cmd_go.c)
+add_executable(cmd_turn ${PROJECT_SOURCE_DIR}/src/cmd_turn.c)
 
 # on spécifie des options pour le compilateur
 target_link_libraries(DCMoteur m rt)
@@ -26,7 +28,9 @@ target_link_libraries(lecMemParTVR m rt)
 target_link_libraries(lectempkine m rt)
 target_link_libraries(Odometry m rt)
 target_link_libraries(regPID m rt)
-target_link_libraries(ResetState m rt)
+target_link_libraries(cmd_go m rt)
+target_link_libraries(cmd_turn m rt)
+
 
 
 message(STATUS "CHEMIN DU PROJET = ${PROJECT_SOURCE_DIR}")
