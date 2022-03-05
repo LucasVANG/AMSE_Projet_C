@@ -102,11 +102,10 @@ void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itér
       allowPrint=1;
     }
     else if(allowPrint==1){
-      fp = fopen("Output.txt", "a");
+      fp = fopen("Output.csv", "a");
       fflush(fp);
       allowPrint=0;
     }
-
   }
 }
 
@@ -203,7 +202,7 @@ int main( int argc, char *argv[])
 
     
     szInStr = (vitesse *)(vAddr);
-    fp = fopen("Output.txt", "w");
+    fp = fopen("Output.csv", "w");
     fprintf(fp,"x,y,theta\n");
   do
   {

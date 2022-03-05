@@ -35,4 +35,4 @@ target_link_libraries(cmd_turn m rt)
 
 
 message(STATUS "CHEMIN DU PROJET = ${PROJECT_SOURCE_DIR}")
-message(STATUS "AUTEURS DU PROJETS = Fabien Plouvier, Quentin Waramer, Lucas Vangaeveren, Quentin Delezenne")
+message(STATUS "AUTEURS DU PROJETS = Fabien Plouvier, Lucas Vangaeveren, Quentin Delezenne")

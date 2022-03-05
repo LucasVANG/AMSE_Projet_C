@@ -32,7 +32,7 @@ double *tv_L;
 Coordonnees* coord;
 
 Coordonnees goal;
-double angleOrder;
+double lastDistance;
 double dt;
 int  GoOn = 1;                 /* ->controle d'execution                */
 
@@ -52,6 +52,9 @@ void usage( char *pgm_name )
     exit( -1 );
   };
 }
+double dist(Coordonnees* a, Coordonnees* b){
+    return sqrt(pow((b->x - a->x),2)+pow((b->y - a->y),2));
+}
 double min(double a, double b){
     if (a > b){
         return b;
@@ -64,16 +67,51 @@ double min(double a, double b){
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
 void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itération
 {
-    double error = goal.theta-coord->theta;
-    double command = min(0.05,error); 
+    double distance = dist(coord,&goal);
+    double lin_cmd = 0.0;
+    double rot_cmd = 0.0;
+    double heading = 0.0;
+
+    // Calcule du cap à suivre
+    if ((goal.x >= coord->x) && (goal.y >= coord->y)){
+        heading = atan((goal.x-coord->x)/(goal.y-coord->y));
+    }
+    else if ((goal.x >= coord->x) && (goal.y <= coord->y)){
+        heading = atan((goal.x-coord->x)/(goal.y-coord->y)) + M_PI;
+    }
+    else if ((goal.x <= coord->x) && (goal.y <= coord->y)){
+        heading = atan((goal.x-coord->x)/(goal.y-coord->y)) + M_PI;
+    }
+    else {
+        heading = atan((goal.x-coord->x)/(goal.y-coord->y)) + 2*M_PI;
+    }
+    // Suivre le cap
+    double error = heading-coord->theta;
+    rot_cmd = min(0.05,error); 
     if (fabs(error) < 0.001){
-        command = 0;
+        rot_cmd = 0;
+    }
+
+    // Avancer
+    lin_cmd = min(0.5,distance); 
+
+    // Stopper
+    if ((distance <= 0.05) || (lastDistance<distance)){
+        lin_cmd = 0;
         GoOn = 0;
     }
-    *tv_R = command;
-    *tv_L = -command;
+
+    // Gestion de l'arrêt
+    if ((distance <= 0.05) || (lastDistance<distance)){
+        lin_cmd = 0;
+        rot_cmd = 0;
+        GoOn = 0;
+    }
+
+    *tv_R = lin_cmd - rot_cmd;
+    *tv_L = lin_cmd + rot_cmd;
     printf("Current : %.2f,%2f,%.2f -- Goal : %.2f,%2f,%.2f\n",coord->x,coord->y,coord->theta,goal.x,goal.y,goal.theta);
-    printf("Command : %.2f -- Error : %.2f\n",command,error);
+    printf("Commands : %.2f:%.2f -- Dist : %.2f\n",lin_cmd,rot_cmd,dist(coord,&goal));
 }
 
 /*#####################*/
@@ -82,11 +120,12 @@ void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itér
 int main( int argc, char *argv[])
 {
     // Gestion des arguments
-    if(argc != 3){
+    if(argc != 4){
         printf("Error : incorrect argument number\n");
         return EXIT_FAILURE;
     }
-    if( sscanf(argv[1], "%lf", &angleOrder ) == 0){return(0);};
+    if( sscanf(argv[1], "%lf", &(goal.x) ) == 0){return(0);};
+    if( sscanf(argv[1], "%lf", &(goal.y) ) == 0){return(0);};
     if( sscanf(argv[2], "%lf", &dt ) == 0){return(0);};
 
     void *vAddr1;                    /* ->adresse virtuelle sur la zone          */
@@ -190,13 +229,7 @@ int main( int argc, char *argv[])
 
 
     // Initiate Go Order
-    goal.theta = coord->theta + angleOrder;
-    if(goal.theta> 6.28){
-        goal.theta-=6.28;
-    }
-    if(goal.theta<-6.28){
-        goal.theta+=6.28;
-    }
+    lastDistance = dist(coord,&goal)+1.0;
 
     do
     {
