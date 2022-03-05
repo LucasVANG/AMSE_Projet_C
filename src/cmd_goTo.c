@@ -71,6 +71,7 @@ void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itér
     double lin_cmd = 0.0;
     double rot_cmd = 0.0;
     double heading = 0.0;
+    printf("oui");
 
     // Calcule du cap à suivre
     if ((goal.x >= coord->x) && (goal.y >= coord->y)){
@@ -120,10 +121,13 @@ void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itér
 int main( int argc, char *argv[])
 {
     // Gestion des arguments
+    printf("oui");
     if(argc != 4){
         printf("Error : incorrect argument number\n");
         return EXIT_FAILURE;
     }
+    printf("oui");
+
     if( sscanf(argv[1], "%lf", &(goal.x) ) == 0){return(0);};
     if( sscanf(argv[1], "%lf", &(goal.y) ) == 0){return(0);};
     if( sscanf(argv[2], "%lf", &dt ) == 0){return(0);};
@@ -221,15 +225,16 @@ int main( int argc, char *argv[])
     sigaction(SIGALRM, &sa, NULL );
     /* initialisation de l'alarme  */
     period.it_interval.tv_sec  = 0;  
-    period.it_interval.tv_usec = dt*1000000;
+    period.it_interval.tv_usec = 1000;
     period.it_value.tv_sec     = 0;
-    period.it_value.tv_usec    = dt*1000000;
+    period.it_value.tv_usec    = 1000;
     /* demarrage de l'alarme */
     setitimer( ITIMER_REAL, &period, NULL );
 
 
     // Initiate Go Order
     lastDistance = dist(coord,&goal)+1.0;
+    
 
     do
     {

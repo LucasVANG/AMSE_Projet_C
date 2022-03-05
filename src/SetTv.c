@@ -74,7 +74,7 @@ void usage( char *szPgmName)
     /*................................................*/
     sprintf(szTargetAreaName,"%s%c", AREA_TV_BASENAME, cDriveID);
     /* zone de commande */
-    if(( iFdTarget = shm_open(szTargetAreaName, O_RDWR, 0600)) < 0 )
+    if(( iFdTarget = shm_open(szTargetAreaName, O_RDWR | O_CREAT, 0600)) < 0 )
     {
         fprintf(stderr,"%s.main() :  ERREUR ---> appel a shm_open() \n", argv[0]);
         fprintf(stderr,"             code = %d (%s)\n", errno, (char *)(strerror(errno)));
