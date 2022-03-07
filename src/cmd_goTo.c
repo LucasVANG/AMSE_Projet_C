@@ -32,7 +32,6 @@ double *tv_L;
 Coordonnees* coord;
 
 Coordonnees goal;
-double lastDistance;
 double dt;
 int  GoOn = 1;                 /* ->controle d'execution                */
 
@@ -71,10 +70,33 @@ void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itér
     double lin_cmd = 0.0;
     double rot_cmd = 0.0;
     double heading = 0.0;
-    printf("oui");
+    double myHeading = 0.0;
+
+    if (coord->theta < 0) {
+        myHeading = coord->theta + 2*M_PI;
+    }
+    else{
+        myHeading = coord->theta;
+    }
 
     // Calcule du cap à suivre
-    if ((goal.x >= coord->x) && (goal.y >= coord->y)){
+    if (goal.x == coord->x){
+        if (goal.y >= coord->y){
+            heading = 0.0;
+        }
+        else{
+            heading = M_PI;
+        }
+    }
+    else if (goal.y == coord->y){
+        if (goal.x >= coord->x){
+            heading = 0.5*M_PI;
+        }
+        else{
+            heading = 1.5*M_PI;
+        }
+    }
+    else if ((goal.x >= coord->x) && (goal.y >= coord->y)){
         heading = atan((goal.x-coord->x)/(goal.y-coord->y));
     }
     else if ((goal.x >= coord->x) && (goal.y <= coord->y)){
@@ -86,33 +108,30 @@ void cycl_alm_handler( int signal ) //On lit la mémoire partagé a chaque itér
     else {
         heading = atan((goal.x-coord->x)/(goal.y-coord->y)) + 2*M_PI;
     }
-    // Suivre le cap
-    double error = heading-coord->theta;
-    rot_cmd = min(0.05,error); 
-    if (fabs(error) < 0.001){
+    
+    double error = heading-(myHeading);
+    if (fabs(error) < 0.01){
         rot_cmd = 0;
+        lin_cmd = min(0.5,distance);
     }
-
-    // Avancer
-    lin_cmd = min(0.5,distance); 
-
-    // Stopper
-    if ((distance <= 0.05) || (lastDistance<distance)){
-        lin_cmd = 0;
-        GoOn = 0;
+    else{
+        if(heading > myHeading+M_PI){
+            rot_cmd = -min(0.02,error);
+        }
+        else{
+            rot_cmd = min(0.02,error);
+        }
     }
-
-    // Gestion de l'arrêt
-    if ((distance <= 0.05) || (lastDistance<distance)){
+    if ((distance <= 0.05)){
         lin_cmd = 0;
         rot_cmd = 0;
         GoOn = 0;
     }
 
-    *tv_R = lin_cmd - rot_cmd;
-    *tv_L = lin_cmd + rot_cmd;
+    *tv_R = lin_cmd + rot_cmd;
+    *tv_L = lin_cmd - rot_cmd;
     printf("Current : %.2f,%2f,%.2f -- Goal : %.2f,%2f,%.2f\n",coord->x,coord->y,coord->theta,goal.x,goal.y,goal.theta);
-    printf("Commands : %.2f:%.2f -- Dist : %.2f\n",lin_cmd,rot_cmd,dist(coord,&goal));
+    printf("Commands : %.2f:%.2f -- HDG : %.2f Dist : %.2f\n",lin_cmd,rot_cmd,heading,dist(coord,&goal));
 }
 
 /*#####################*/
@@ -129,8 +148,8 @@ int main( int argc, char *argv[])
     printf("oui");
 
     if( sscanf(argv[1], "%lf", &(goal.x) ) == 0){return(0);};
-    if( sscanf(argv[1], "%lf", &(goal.y) ) == 0){return(0);};
-    if( sscanf(argv[2], "%lf", &dt ) == 0){return(0);};
+    if( sscanf(argv[2], "%lf", &(goal.y) ) == 0){return(0);};
+    if( sscanf(argv[3], "%lf", &dt ) == 0){return(0);};
 
     void *vAddr1;                    /* ->adresse virtuelle sur la zone          */
     void *vAddr2;
@@ -225,16 +244,11 @@ int main( int argc, char *argv[])
     sigaction(SIGALRM, &sa, NULL );
     /* initialisation de l'alarme  */
     period.it_interval.tv_sec  = 0;  
-    period.it_interval.tv_usec = 1000;
+    period.it_interval.tv_usec = dt*1000000;
     period.it_value.tv_sec     = 0;
-    period.it_value.tv_usec    = 1000;
+    period.it_value.tv_usec    = dt*1000000;
     /* demarrage de l'alarme */
     setitimer( ITIMER_REAL, &period, NULL );
-
-
-    // Initiate Go Order
-    lastDistance = dist(coord,&goal)+1.0;
-    
 
     do
     {

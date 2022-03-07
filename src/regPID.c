@@ -122,18 +122,27 @@ int main(int argc, char *argv[]){
         // TVL
         void *vAddr;
         int  iShmFd;
-        if( (iShmFd = shm_open(AREA_TVL, O_RDWR, 0600)) < 0)
-        {  
-            fprintf(stderr,"ERREUR : ---> appel a shm_open()\n");
-            fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
-            return( -errno );
-        };
-        ftruncate(iShmFd, STR_LEN);
-        if( (vAddr = mmap(NULL, STR_LEN, PROT_READ | PROT_WRITE, MAP_SHARED, iShmFd, 0 ))  == NULL)
+        if(( iShmFd = shm_open(AREA_TVL, O_RDWR | O_CREAT, 0600)) < 0 )
         {
-            fprintf(stderr,"ERREUR : ---> appel a mmap()\n");
-            fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
-            return( -errno );
+            fprintf(stderr,"%s.main() :  ERREUR ---> appel a shm_open() \n", argv[0]);
+            fprintf(stderr,"             code = %d (%s)\n", errno, (char *)(strerror(errno)));
+            exit( -errno );
+        }
+        else
+        {
+            printf("LIEN a la zone %s\n", AREA_TVL);
+        };
+        if( ftruncate(iShmFd, sizeof(double)) < 0 )
+        {
+            fprintf(stderr,"%s.main() :  ERREUR ---> appel a ftruncate() #1\n", argv[0]);
+            fprintf(stderr,"             code = %d (%s)\n", errno, (char *)(strerror(errno)));
+            exit( -errno );
+        };
+        if((vAddr = (double *)(mmap(NULL, sizeof(double), PROT_READ | PROT_WRITE, MAP_SHARED, iShmFd, 0))) == MAP_FAILED )
+        {
+            fprintf(stderr,"%s.main() :  ERREUR ---> appel a mmap() #1\n", argv[0]);
+            fprintf(stderr,"             code = %d (%s)\n", errno, (char *)(strerror(errno)));
+            exit( -errno );
         };
         sm_tv = (double *)(vAddr);
         // STATEL
@@ -179,18 +188,27 @@ int main(int argc, char *argv[]){
         // TVR
         void *vAddr;
         int  iShmFd;
-        if( (iShmFd = shm_open(AREA_TVR, O_RDWR, 0600)) < 0)
-        {  
-            fprintf(stderr,"ERREUR : ---> appel a shm_open()\n");
-            fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
-            return( -errno );
-        };
-        ftruncate(iShmFd, STR_LEN);
-        if( (vAddr = mmap(NULL, STR_LEN, PROT_READ | PROT_WRITE, MAP_SHARED, iShmFd, 0 ))  == NULL)
+        if(( iShmFd = shm_open(AREA_TVR, O_RDWR | O_CREAT, 0600)) < 0 )
         {
-            fprintf(stderr,"ERREUR : ---> appel a mmap()\n");
-            fprintf(stderr,"         code  = %d (%s)\n", errno, (char *)(strerror(errno)));
-            return( -errno );
+            fprintf(stderr,"%s.main() :  ERREUR ---> appel a shm_open() \n", argv[0]);
+            fprintf(stderr,"             code = %d (%s)\n", errno, (char *)(strerror(errno)));
+            exit( -errno );
+        }
+        else
+        {
+            printf("LIEN a la zone %s\n", AREA_TVR);
+        };
+        if( ftruncate(iShmFd, sizeof(double)) < 0 )
+        {
+            fprintf(stderr,"%s.main() :  ERREUR ---> appel a ftruncate() #1\n", argv[0]);
+            fprintf(stderr,"             code = %d (%s)\n", errno, (char *)(strerror(errno)));
+            exit( -errno );
+        };
+        if((vAddr = (double *)(mmap(NULL, sizeof(double), PROT_READ | PROT_WRITE, MAP_SHARED, iShmFd, 0))) == MAP_FAILED )
+        {
+            fprintf(stderr,"%s.main() :  ERREUR ---> appel a mmap() #1\n", argv[0]);
+            fprintf(stderr,"             code = %d (%s)\n", errno, (char *)(strerror(errno)));
+            exit( -errno );
         };
         sm_tv = (double *)(vAddr);
         // STATER
