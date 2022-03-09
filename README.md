@@ -7,7 +7,7 @@
   Ce depot et composé de 5 fichiers.
   
   - Ce README.md
-  - Le fichier CMakeList.text et compilerProjet.sh qui normalement permet de compiler l'ensemble des .c nécessaire au bon fonctionnement du projet
+  - Le fichier CMakeList.text et compilerProjet.sh qui permet de compiler l'ensemble des .c nécessaires au bon fonctionnement du projet (voir ci-dessous)
   - Du répertoire src contenant l'ensemble des .c créé
   - Du répertoire bin contenant les versions compilés des fichiers contenus dans src
     
@@ -26,7 +26,18 @@
     - cmd_go qui permet d'avancer en ligne droite d'une distance donnée (./cmd_go distance dt)
     - cmd_turn qui permet de faire tourner le robot sur place (./cmd_turn angle(radians) dt)
     - cmd_goTo qui regroupe les deux précédents permettant de voyager jusqu'à un point du repère global (./cmdgoTo x y dt)
-    
+
+  
+  ### compilerProjet
+  Le fichier compilerProjet permet de compiler simplement et rapidement tout le projet.   
+  *Veillez à avoir CMake installé sur votre machine.*   
+  Pour l'utiliser, faites la commande :
+  ```bash
+  ./compilerProjet
+  ```
+
+
+
   ### StartRobot
   StartRobot est un script bach présent dans bin avec l'ensemble des fichiers compilé qui permet de lancer l'ensemble des processus dans l'ordre voulu pour un bon fonctionnement
   
